@@ -1,0 +1,370 @@
+{
+  "name": "HTTP checking",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -480,
+        -105
+      ],
+      "id": "48e7ce11-b710-4a7c-b7de-9fad9372be55",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Split Out1').item.json.recipients }}",
+        "text": "=🆘 {{ $('Split Out').item.json.domains }} is not running.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1280,
+        -280
+      ],
+      "id": "bf25d6d3-04e6-46f9-9e92-9be327d8b655",
+      "name": "Telegram",
+      "webhookId": "fefed486-8717-420e-8528-f947c3899ec3",
+      "credentials": {
+        "telegramApi": {
+          "id": "9PdCQcr4ygPAsA1Z",
+          "name": "H2N8N Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        180,
+        -105
+      ],
+      "id": "44b03691-d98f-4d1b-b6fb-937c29face77",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        1500,
+        -80
+      ],
+      "id": "b6c01749-a05b-42ba-ae08-3ad3d9d03f6a"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "domains",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -105
+      ],
+      "id": "85a8561b-930a-416b-96e4-6ae4700608c6",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "81a7deb4-80ce-47f1-bfc3-ed5c00d6324d",
+              "name": "domains",
+              "value": "['n8n.io', 'google.com']",
+              "type": "array"
+            },
+            {
+              "id": "82cb2120-450c-47e7-96e4-72a8acafcc3e",
+              "name": "idTelegram",
+              "value": "[123, 456]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -260,
+        -105
+      ],
+      "id": "11866b71-b7c3-40c8-8937-ae33862cd943",
+      "name": "Set domain"
+    },
+    {
+      "parameters": {
+        "url": "=https://{{ $json.domains }}",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "maxRedirects": 5
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        -180
+      ],
+      "id": "0408b9ee-d613-444d-8492-8e5b6a7d781b",
+      "name": "Get code HTTP",
+      "alwaysOutputData": true,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "recipients",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1060,
+        -280
+      ],
+      "id": "ee6af138-c29e-49a9-8591-52037f81d839",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "58fec0a9-9771-40e0-8a5d-c11c5b0fa37d",
+              "name": "recipients",
+              "value": "={{ $('Set domain').item.json.idTelegram }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        840,
+        -280
+      ],
+      "id": "bedc0246-8c2f-4a78-8be3-777af3ce0bc8",
+      "name": "Get recipients"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7d3d0158-0b87-4bff-9919-a00c10b3c64e",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        620,
+        -180
+      ],
+      "id": "51d442c7-50a6-4303-937f-418f76c01d8c",
+      "name": "Check HTTP Code"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1280,
+        -80
+      ],
+      "id": "11f89c75-fe41-486d-9909-fa8c3ea0386f",
+      "name": "Wait",
+      "webhookId": "7cee3847-2b95-4fc7-94c9-6f136f1f2fda"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set domain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get code HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set domain": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get code HTTP": {
+      "main": [
+        [
+          {
+            "node": "Check HTTP Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get recipients": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check HTTP Code": {
+      "main": [
+        [
+          {
+            "node": "Get recipients",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ab7b255d-cc02-4f82-a84b-09aeec6d3ba8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e3c4c40668081dd542806586c9fb45ef8e17d19a40a4738718d1afc06841a4d1"
+  },
+  "id": "AS8msX8GQ6drP4vM",
+  "tags": []
+}
