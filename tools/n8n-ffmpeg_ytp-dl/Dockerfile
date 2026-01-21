@@ -8,6 +8,6 @@ RUN wget https://gitlab.alpinelinux.org/api/v4/projects/5/packages/generic/v2.14
 	&& apk update \
 	&& apk add --no-cache ffmpeg yt-dlp imagemagick \
 	&& yt-dlp -U \
-	&& rm -rf /var/cache/apk
+	&& rm -rf /var/cache/apk /tmp/apk.static
 
 USER node
